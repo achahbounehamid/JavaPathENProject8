@@ -92,9 +92,11 @@ public class TestTourGuideService {
 		assertEquals(user.getUserId(), visitedLocation.userId);
 	}
 
-	@Disabled // Not yet implemented
+//	@Disabled // Not yet implemented
 	@Test
+	//un utilisateur est considéré “proche” de toutes les attractions, alors il reçoit une récompense pour chacune
 	public void getNearbyAttractions() {
+
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		InternalTestHelper.setInternalUserNumber(0);

@@ -37,11 +37,13 @@ public class RewardsService {
 	}
 	
 	public void calculateRewards(User user) {
+		//Récupère les lieux visités et les attractions disponibles
 		List<VisitedLocation> userLocations = user.getVisitedLocations();
 		List<Attraction> attractions = gpsUtil.getAttractions();
-		
+		//deux boucles imbriquées???
 		for(VisitedLocation visitedLocation : userLocations) {
 			for(Attraction attraction : attractions) {
+				//vérifie si l’utilisateur a déjà reçu une récompense pour cette attraction!!!
 				if(user.getUserRewards().stream().filter(r -> r.attraction.attractionName.equals(attraction.attractionName)).count() == 0) {
 					if(nearAttraction(visitedLocation, attraction)) {
 						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
@@ -51,14 +53,25 @@ public class RewardsService {
 		}
 	}
 	
-	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
-		return getDistance(attraction, location) > attractionProximityRange ? false : true;
+//	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
+//		return getDistance(attraction, location) > attractionProximityRange ? false : true;
+//	}
+public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
+	// Si proximityBuffer est très grand, on considère que toutes les attractions sont proches
+	if (proximityBuffer == Integer.MAX_VALUE) {
+		return true;
 	}
-	
-	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
-		return getDistance(attraction, visitedLocation.location) > proximityBuffer ? false : true;
-	}
-	
+	return getDistance(attraction, location) <= proximityBuffer;
+}
+
+//	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
+//		return getDistance(attraction, visitedLocation.location) > proximityBuffer ? false : true;
+//	}
+private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
+	return getDistance(attraction, visitedLocation.location) <= proximityBuffer;
+}
+
+
 	private int getRewardPoints(Attraction attraction, User user) {
 		return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
 	}

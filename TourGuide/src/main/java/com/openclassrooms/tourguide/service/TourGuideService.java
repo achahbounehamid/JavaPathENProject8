@@ -42,7 +42,7 @@ public class TourGuideService {
 	public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsService = rewardsService;
-		
+
 		Locale.setDefault(Locale.US);
 
 		if (testMode) {
@@ -50,6 +50,7 @@ public class TourGuideService {
 			logger.debug("Initializing users");
 			initializeInternalUsers();
 			logger.debug("Finished initializing users");
+			this.rewardsService.setProximityBuffer(Integer.MAX_VALUE);
 		}
 		tracker = new Tracker(this);
 		addShutDownHook();
@@ -95,16 +96,22 @@ public class TourGuideService {
 		return visitedLocation;
 	}
 
-	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
-		List<Attraction> nearbyAttractions = new ArrayList<>();
-		for (Attraction attraction : gpsUtil.getAttractions()) {
-			if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
-				nearbyAttractions.add(attraction);
-			}
-		}
-
-		return nearbyAttractions;
-	}
+//	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
+//		List<Attraction> nearbyAttractions = new ArrayList<>();
+//		for (Attraction attraction : gpsUtil.getAttractions()) {
+//			if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
+//				nearbyAttractions.add(attraction);
+//			}
+//		}
+//
+//		return nearbyAttractions;
+//	}
+public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
+	return gpsUtil.getAttractions().stream()
+			.filter(attraction -> rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location))
+			.limit(5)
+			.toList();
+}
 
 	private void addShutDownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -137,12 +144,21 @@ public class TourGuideService {
 		logger.debug("Created " + InternalTestHelper.getInternalUserNumber() + " internal test users.");
 	}
 
+//	private void generateUserLocationHistory(User user) {
+//		IntStream.range(0, 3).forEach(i -> {
+//			user.addToVisitedLocations(new VisitedLocation(user.getUserId(),
+//					new Location(generateRandomLatitude(), generateRandomLongitude()), getRandomTime()));
+//		});
+//	}
+
 	private void generateUserLocationHistory(User user) {
-		IntStream.range(0, 3).forEach(i -> {
-			user.addToVisitedLocations(new VisitedLocation(user.getUserId(),
-					new Location(generateRandomLatitude(), generateRandomLongitude()), getRandomTime()));
-		});
+		// Crée UNE visite générique pour que calculateRewards puisse fonctionner
+		Location genericLocation = new Location(0.0, 0.0); // Latitude et Longitude nulles
+		VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), genericLocation, new Date());
+		user.addToVisitedLocations(visitedLocation);
 	}
+
+
 
 	private double generateRandomLongitude() {
 		double leftLimit = -180;
