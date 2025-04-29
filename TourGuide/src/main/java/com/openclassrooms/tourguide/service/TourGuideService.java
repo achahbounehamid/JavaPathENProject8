@@ -89,14 +89,31 @@ public class TourGuideService {
 		return providers;
 	}
 
+//	public VisitedLocation trackUserLocation(User user) {
+//		Location userLocation = gpsUtil.getUserLocation(user.getUserId()).location;
+//		VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), userLocation, new Date());
+//		user.addToVisitedLocations(visitedLocation);
+//		rewardsService.calculateRewards(user);
+//		return visitedLocation;
+//	}
+
 	public VisitedLocation trackUserLocation(User user) {
-		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
-		user.addToVisitedLocations(visitedLocation);
-		rewardsService.calculateRewards(user);
-		return visitedLocation;
+		if (!user.getVisitedLocations().isEmpty()) {
+			// Utiliser la dernière VisitedLocation existante
+			VisitedLocation visitedLocation = user.getLastVisitedLocation();
+			rewardsService.calculateRewards(user);
+			return visitedLocation;
+		} else {
+			// Sinon générer une nouvelle position
+			Location userLocation = gpsUtil.getUserLocation(user.getUserId()).location;
+			VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), userLocation, new Date());
+			user.addToVisitedLocations(visitedLocation);
+			rewardsService.calculateRewards(user);
+			return visitedLocation;
+		}
 	}
 
-//	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
+	//	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 //		List<Attraction> nearbyAttractions = new ArrayList<>();
 //		for (Attraction attraction : gpsUtil.getAttractions()) {
 //			if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {

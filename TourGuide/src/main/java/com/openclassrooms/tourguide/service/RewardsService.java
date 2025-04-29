@@ -37,6 +37,7 @@ public class RewardsService {
 	}
 	
 	public void calculateRewards(User user) {
+		this.setProximityBuffer(Integer.MAX_VALUE);
 		//Récupère les lieux visités et les attractions disponibles
 		List<VisitedLocation> userLocations = user.getVisitedLocations();
 		List<Attraction> attractions = gpsUtil.getAttractions();
