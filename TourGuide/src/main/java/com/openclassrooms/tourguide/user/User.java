@@ -62,13 +62,19 @@ private List<UserReward> userRewards = new CopyOnWriteArrayList<>();
 	}
 	
 	public void addToVisitedLocations(VisitedLocation visitedLocation) {
+
 		visitedLocations.add(visitedLocation);
 	}
+
 	
 	public List<VisitedLocation> getVisitedLocations() {
 		return visitedLocations;
 	}
-	
+
+//	public VisitedLocation getLastVisitedLocation() {
+//		return visitedLocations.isEmpty() ? null : visitedLocations.get(visitedLocations.size() - 1);
+//	}
+
 	public void clearVisitedLocations() {
 		visitedLocations.clear();
 	}
@@ -83,10 +89,6 @@ public void addUserReward(UserReward userReward) {
 		userRewards.add(userReward);
 	}
 }
-
-
-
-
 
 	public List<UserReward> getUserRewards() {
 		return userRewards;

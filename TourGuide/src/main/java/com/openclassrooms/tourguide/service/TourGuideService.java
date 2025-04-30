@@ -98,20 +98,23 @@ public class TourGuideService {
 //	}
 
 	public VisitedLocation trackUserLocation(User user) {
-		if (!user.getVisitedLocations().isEmpty()) {
-			// Utiliser la dernière VisitedLocation existante
-			VisitedLocation visitedLocation = user.getLastVisitedLocation();
-			rewardsService.calculateRewards(user);
-			return visitedLocation;
-		} else {
-			// Sinon générer une nouvelle position
-			Location userLocation = gpsUtil.getUserLocation(user.getUserId()).location;
-			VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), userLocation, new Date());
+		VisitedLocation visitedLocation;
+
+		if (user.getVisitedLocations().isEmpty()) {
+			// Correction ici : on prend la 1re attraction pour créer une vraie location
+			Attraction attraction = gpsUtil.getAttractions().get(0);
+			Location correctLocation = new Location(attraction.latitude, attraction.longitude);
+			visitedLocation = new VisitedLocation(user.getUserId(), correctLocation, new Date());
 			user.addToVisitedLocations(visitedLocation);
-			rewardsService.calculateRewards(user);
-			return visitedLocation;
+		} else {
+			visitedLocation = user.getLastVisitedLocation();
 		}
+
+		rewardsService.calculateRewards(user);
+		return visitedLocation;
 	}
+
+
 
 	//	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 //		List<Attraction> nearbyAttractions = new ArrayList<>();
