@@ -1,4 +1,5 @@
-package com.openclassrooms.tourguide;
+package com.openclassrooms.tourguide.DTO;
+
 public class NearbyAttractionDto {
     public String attractionName;
     public double attractionLatitude;

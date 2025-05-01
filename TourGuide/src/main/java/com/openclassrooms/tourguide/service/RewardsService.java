@@ -83,8 +83,8 @@ private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attra
 	return getDistance(attraction, visitedLocation.location) <= proximityBuffer;
 }
 
-
-	private int getRewardPoints(Attraction attraction, User user) {
+//modification sur la méthode getRewardPoints avant privite
+	public int getRewardPoints(Attraction attraction, User user) {
 		return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
 	}
 	

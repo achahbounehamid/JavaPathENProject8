@@ -140,6 +140,9 @@ public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 			}
 		});
 	}
+	public List<Attraction> getAllAttractions() {
+		return gpsUtil.getAttractions();
+	}
 
 	/**********************************************************************************
 	 * 
