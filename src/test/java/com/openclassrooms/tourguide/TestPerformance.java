@@ -19,7 +19,8 @@ import com.openclassrooms.tourguide.service.RewardsService;
 import com.openclassrooms.tourguide.service.TourGuideService;
 import com.openclassrooms.tourguide.user.User;
 import java.util.concurrent.CompletableFuture;
-@Disabled
+
+//@Disabled
 public class TestPerformance {
 
 
