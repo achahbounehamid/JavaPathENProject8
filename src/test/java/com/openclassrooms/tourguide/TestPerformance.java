@@ -1,7 +1,6 @@
 package com.openclassrooms.tourguide;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -19,32 +18,37 @@ import com.openclassrooms.tourguide.service.RewardsService;
 import com.openclassrooms.tourguide.service.TourGuideService;
 import com.openclassrooms.tourguide.user.User;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.junit.jupiter.api.Timeout;
 
 //@Disabled
 public class TestPerformance {
-
-
 	@Test
+	@Timeout(value = 10, unit = TimeUnit.MINUTES)
 	public void highVolumeTrackLocation() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
-		InternalTestHelper.setInternalUserNumber(1000); // augmenter  à 1000, 10_000...
+		int userCount = 1000;
+		InternalTestHelper.setInternalUserNumber(userCount);
 
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
-
 		List<User> allUsers = tourGuideService.getAllUsers();
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		//  Utilisation de CompletableFuture pour paralléliser le traitement
+		// Pool de threads avec taille limitée
+		ExecutorService executor = Executors.newFixedThreadPool(100);
+
 		List<CompletableFuture<Void>> futures = allUsers.stream()
-				.map(user -> CompletableFuture.runAsync(() -> tourGuideService.trackUserLocation(user)))
+				.map(user -> CompletableFuture.runAsync(() -> tourGuideService.trackUserLocation(user), executor))
 				.collect(Collectors.toList());
 
-		//  Attendre que tous les traitements soient terminés
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+		executor.shutdown(); // bien fermer le pool
 
 		stopWatch.stop();
 		tourGuideService.tracker.stopTracking();
@@ -54,14 +58,16 @@ public class TestPerformance {
 
 		assertTrue(TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	}
+
+
 	@Test
+	@Timeout(value = 10, unit = TimeUnit.MINUTES)
 	public void highVolumeGetRewards() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
-		InternalTestHelper.setInternalUserNumber(1000);
-		StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
+		int userCount = 1000;
+		InternalTestHelper.setInternalUserNumber(userCount);
 
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
@@ -69,18 +75,25 @@ public class TestPerformance {
 		List<User> allUsers = tourGuideService.getAllUsers();
 
 		// Chaque utilisateur "visite" cette attraction
-		allUsers.forEach(u ->
-				u.addToVisitedLocations(new VisitedLocation(u.getUserId(), attraction, new Date()))
+		allUsers.forEach(user ->
+				user.addToVisitedLocations(new VisitedLocation(user.getUserId(), attraction, new Date()))
 		);
+
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+
+		// Pool de threads limité
+		ExecutorService executor = Executors.newFixedThreadPool(100);
 
 		// Parallélisation du calcul des récompenses
 		List<CompletableFuture<Void>> futures = allUsers.stream()
-				.map(user -> CompletableFuture.runAsync(() ->
-						rewardsService.calculateRewards(user)))
+				.map(user -> CompletableFuture.runAsync(() -> rewardsService.calculateRewards(user), executor))
 				.collect(Collectors.toList());
 
 		// Attendre la fin de toutes les tâches
-		futures.forEach(CompletableFuture::join);
+		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+		executor.shutdown();
 
 		// Vérifier les résultats
 		for (User user : allUsers) {
@@ -96,4 +109,5 @@ public class TestPerformance {
 		assertTrue(TimeUnit.MINUTES.toSeconds(20) >=
 				TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	}
+
 }
