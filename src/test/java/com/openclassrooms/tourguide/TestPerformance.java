@@ -30,7 +30,7 @@ public class TestPerformance {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
-		int userCount = 1000;
+		int userCount = 10000;
 		InternalTestHelper.setInternalUserNumber(userCount);
 
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
@@ -40,7 +40,7 @@ public class TestPerformance {
 		stopWatch.start();
 
 		// Pool de threads avec taille limitée
-		ExecutorService executor = Executors.newFixedThreadPool(100);
+		ExecutorService executor = Executors.newFixedThreadPool(500);
 
 		List<CompletableFuture<Void>> futures = allUsers.stream()
 				.map(user -> CompletableFuture.runAsync(() -> tourGuideService.trackUserLocation(user), executor))
@@ -66,7 +66,7 @@ public class TestPerformance {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
-		int userCount = 1000;
+		int userCount = 10000;
 		InternalTestHelper.setInternalUserNumber(userCount);
 
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
@@ -83,7 +83,7 @@ public class TestPerformance {
 		stopWatch.start();
 
 		// Pool de threads limité
-		ExecutorService executor = Executors.newFixedThreadPool(100);
+		ExecutorService executor = Executors.newFixedThreadPool(500);
 
 		// Parallélisation du calcul des récompenses
 		List<CompletableFuture<Void>> futures = allUsers.stream()
