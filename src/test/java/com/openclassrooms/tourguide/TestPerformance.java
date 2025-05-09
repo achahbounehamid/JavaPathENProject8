@@ -34,7 +34,7 @@ public class TestPerformance {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
-		int userCount = 100000; // Adapter ici si besoin
+		int userCount = 100000;
 		InternalTestHelper.setInternalUserNumber(userCount);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 		List<User> allUsers = tourGuideService.getAllUsers();
