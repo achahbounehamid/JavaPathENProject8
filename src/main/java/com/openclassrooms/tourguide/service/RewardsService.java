@@ -62,12 +62,6 @@ public class RewardsService {
 		}
 	}
 
-
-
-
-	//	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
-//		return getDistance(attraction, location) > attractionProximityRange ? false : true;
-//	}
 public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
 	// Si proximityBuffer est très grand, on considère que toutes les attractions sont proches
 	if (proximityBuffer == Integer.MAX_VALUE) {
@@ -76,9 +70,6 @@ public boolean isWithinAttractionProximity(Attraction attraction, Location locat
 	return getDistance(attraction, location) <= proximityBuffer;
 }
 
-//	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
-//		return getDistance(attraction, visitedLocation.location) > proximityBuffer ? false : true;
-//	}
 private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
 	return getDistance(attraction, visitedLocation.location) <= proximityBuffer;
 }

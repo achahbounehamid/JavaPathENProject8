@@ -89,13 +89,6 @@ public class TourGuideService {
 		return providers;
 	}
 
-//	public VisitedLocation trackUserLocation(User user) {
-//		Location userLocation = gpsUtil.getUserLocation(user.getUserId()).location;
-//		VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), userLocation, new Date());
-//		user.addToVisitedLocations(visitedLocation);
-//		rewardsService.calculateRewards(user);
-//		return visitedLocation;
-//	}
 
 	public VisitedLocation trackUserLocation(User user) {
 		VisitedLocation visitedLocation;
@@ -114,18 +107,6 @@ public class TourGuideService {
 		return visitedLocation;
 	}
 
-
-
-	//	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
-//		List<Attraction> nearbyAttractions = new ArrayList<>();
-//		for (Attraction attraction : gpsUtil.getAttractions()) {
-//			if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
-//				nearbyAttractions.add(attraction);
-//			}
-//		}
-//
-//		return nearbyAttractions;
-//	}
 public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 	return gpsUtil.getAttractions().stream()
 			.filter(attraction -> rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location))
@@ -144,14 +125,8 @@ public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 		return gpsUtil.getAttractions();
 	}
 
-	/**********************************************************************************
-	 * 
-	 * Methods Below: For Internal Testing
-	 * 
-	 **********************************************************************************/
 	private static final String tripPricerApiKey = "test-server-api-key";
-	// Database connection will be used for external users, but for testing purposes
-	// internal users are provided and stored in memory
+
 	private final Map<String, User> internalUserMap = new HashMap<>();
 
 	private void initializeInternalUsers() {
@@ -167,20 +142,12 @@ public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 		logger.debug("Created " + InternalTestHelper.getInternalUserNumber() + " internal test users.");
 	}
 
-//	private void generateUserLocationHistory(User user) {
-//		IntStream.range(0, 3).forEach(i -> {
-//			user.addToVisitedLocations(new VisitedLocation(user.getUserId(),
-//					new Location(generateRandomLatitude(), generateRandomLongitude()), getRandomTime()));
-//		});
-//	}
-
 	private void generateUserLocationHistory(User user) {
 		// Crée UNE visite générique pour que calculateRewards puisse fonctionner
 		Location genericLocation = new Location(0.0, 0.0); // Latitude et Longitude nulles
 		VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), genericLocation, new Date());
 		user.addToVisitedLocations(visitedLocation);
 	}
-
 
 
 	private double generateRandomLongitude() {
