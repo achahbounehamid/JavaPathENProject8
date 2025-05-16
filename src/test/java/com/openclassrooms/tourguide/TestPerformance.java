@@ -21,7 +21,7 @@ import com.openclassrooms.tourguide.service.TourGuideService;
 import com.openclassrooms.tourguide.user.User;
 import org.junit.jupiter.api.Timeout;
 public class TestPerformance {
-//créer un pool de threads adapté au nombre d’utilisateurs à traiter
+
 	private ExecutorService getThreadPool(int userCount) {
 		if (userCount <= 100) return Executors.newFixedThreadPool(10);
 		if (userCount <= 1000) return Executors.newFixedThreadPool(100);
@@ -37,7 +37,7 @@ public class TestPerformance {
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
 		int userCount = Integer.parseInt(System.getProperty("userCount", "100000"));
-		InternalTestHelper.setInternalUserNumber(userCount);.
+		InternalTestHelper.setInternalUserNumber(userCount);
 
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 		List<User> allUsers = tourGuideService.getAllUsers();
