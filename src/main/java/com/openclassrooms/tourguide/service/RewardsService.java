@@ -62,17 +62,25 @@ public class RewardsService {
 		}
 	}
 
+//public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
+//	// Si proximityBuffer est très grand, on considère que toutes les attractions sont proches
+//	if (proximityBuffer == Integer.MAX_VALUE) {
+//		return true;
+//	}
+//	return getDistance(attraction, location) <= proximityBuffer;
+//}
+//
+//private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
+//	return getDistance(attraction, visitedLocation.location) <= proximityBuffer;
+//}
 public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
-	// Si proximityBuffer est très grand, on considère que toutes les attractions sont proches
-	if (proximityBuffer == Integer.MAX_VALUE) {
-		return true;
-	}
-	return getDistance(attraction, location) <= proximityBuffer;
+	return getDistance(attraction, location) > attractionProximityRange ? false : true;
 }
 
-private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
-	return getDistance(attraction, visitedLocation.location) <= proximityBuffer;
-}
+	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
+		return getDistance(attraction, visitedLocation.location) > proximityBuffer ? false : true;
+	}
+
 
 //modification sur la méthode getRewardPoints avant privite
 	public int getRewardPoints(Attraction attraction, User user) {

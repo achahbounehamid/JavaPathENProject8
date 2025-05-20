@@ -4,7 +4,6 @@ import com.openclassrooms.tourguide.helper.InternalTestHelper;
 import com.openclassrooms.tourguide.tracker.Tracker;
 import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -17,18 +16,19 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.Location;
 import gpsUtil.location.VisitedLocation;
-
 import tripPricer.Provider;
 import tripPricer.TripPricer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.Comparator;
 
 @Service
 public class TourGuideService {
@@ -38,6 +38,7 @@ public class TourGuideService {
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
 	boolean testMode = true;
+	private final ExecutorService executorService = Executors.newFixedThreadPool(100);
 
 	public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
@@ -60,11 +61,50 @@ public class TourGuideService {
 		return user.getUserRewards();
 	}
 
-	public VisitedLocation getUserLocation(User user) {
-		VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation()
-				: trackUserLocation(user);
-		return visitedLocation;
+//	public VisitedLocation getUserLocation(User user) {
+//		VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ?
+//				user.getLastVisitedLocation()
+//				: trackUserLocation(user);
+//		return visitedLocation;
+//	}
+
+
+public void trackAllUsersLocationAsync() {
+	List<User> allUsers = getAllUsers(); // méthode existante dans TourGuideService
+
+	List<CompletableFuture<Void>> futures = allUsers.stream()
+			.map(user -> CompletableFuture.runAsync(() -> {
+				trackUserLocation(user); // méthode existante
+			}, executorService))
+			.collect(Collectors.toList())  ;
+
+	CompletableFuture<Void>[] futureArray = futures.toArray(new CompletableFuture[0]);
+	CompletableFuture.allOf(futureArray).join();
+
+}
+
+	public void calculateAllRewardsAsync() {
+		List<User> allUsers = getAllUsers();
+
+		List<CompletableFuture<Void>> futures = allUsers.stream()
+				.map(user -> CompletableFuture.runAsync(() -> {
+					rewardsService.calculateRewards(user);
+				}, executorService))
+				.collect(Collectors.toList());
+
+		CompletableFuture<Void>[] futureArray = futures.toArray(new CompletableFuture[0]);
+		CompletableFuture.allOf(futureArray).join();
 	}
+
+
+	//la méthode est modifier
+public VisitedLocation getUserLocation(User user) {
+	if (user.getVisitedLocations().isEmpty()) {
+		return trackUserLocation(user);
+	}
+	return user.getLastVisitedLocation();
+}
+
 
 	public User getUser(String userName) {
 		return internalUserMap.get(userName);
@@ -89,39 +129,45 @@ public class TourGuideService {
 		return providers;
 	}
 
-
+//la méthode à été  modifiée
 	public VisitedLocation trackUserLocation(User user) {
 		VisitedLocation visitedLocation;
 
 		if (user.getVisitedLocations().isEmpty()) {
-			// Correction ici : on prend la 1re attraction pour créer une vraie location
-			Attraction attraction = gpsUtil.getAttractions().get(0);
-			Location correctLocation = new Location(attraction.latitude, attraction.longitude);
-			visitedLocation = new VisitedLocation(user.getUserId(), correctLocation, new Date());
+			visitedLocation = gpsUtil.getUserLocation(user.getUserId());
 			user.addToVisitedLocations(visitedLocation);
 		} else {
 			visitedLocation = user.getLastVisitedLocation();
 		}
 
 		rewardsService.calculateRewards(user);
-		return visitedLocation;
-	}
 
+
+		return visitedLocation;
+
+
+	}
+//la méthode à été modifiée
 public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 	return gpsUtil.getAttractions().stream()
-			.filter(attraction -> rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location))
+			.sorted(Comparator.comparingDouble(attraction ->
+					rewardsService.getDistance(visitedLocation.location, new Location(attraction.latitude, attraction.longitude))
+			))
 			.limit(5)
 			.toList();
 }
 
+
 	private void addShutDownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
+
 				tracker.stopTracking();
 			}
 		});
 	}
 	public List<Attraction> getAllAttractions() {
+
 		return gpsUtil.getAttractions();
 	}
 
@@ -142,13 +188,12 @@ public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 		logger.debug("Created " + InternalTestHelper.getInternalUserNumber() + " internal test users.");
 	}
 
-	private void generateUserLocationHistory(User user) {
-		// Crée UNE visite générique pour que calculateRewards puisse fonctionner
-		Location genericLocation = new Location(0.0, 0.0); // Latitude et Longitude nulles
-		VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), genericLocation, new Date());
-		user.addToVisitedLocations(visitedLocation);
-	}
 
+	private void generateUserLocationHistory(User user) {
+		IntStream.range(0, 3).forEach(i-> {
+			user.addToVisitedLocations(new VisitedLocation(user.getUserId(), new Location(generateRandomLatitude(), generateRandomLongitude()), getRandomTime()));
+		});
+	}
 
 	private double generateRandomLongitude() {
 		double leftLimit = -180;
