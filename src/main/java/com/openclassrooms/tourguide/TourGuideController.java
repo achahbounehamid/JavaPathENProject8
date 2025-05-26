@@ -14,7 +14,7 @@ import com.openclassrooms.tourguide.DTO.NearbyAttractionDto;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.Location;
 import gpsUtil.location.VisitedLocation;
-
+import com.openclassrooms.tourguide.DTO.NearbyAttractionDto;
 import com.openclassrooms.tourguide.service.TourGuideService;
 import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
@@ -44,34 +44,15 @@ public class TourGuideController {
     }
 
 
-//@RequestMapping("/getNearbyAttractions")
-//public List<Map<String, Object>> getNearbyAttractions(@RequestParam String userName) {
-//    User user = tourGuideService.getUser(userName);
-//    VisitedLocation visitedLocation = tourGuideService.getUserLocation(user);
-//    Location userLocation = visitedLocation.location;
-//
-//    return tourGuideService.getAllAttractions().stream()
-//
-//            .sorted(Comparator.comparingDouble(attraction ->
-//                    rewardsService.getDistance(userLocation, new Location(attraction.latitude, attraction.longitude))
-//            ))
-//            .limit(5)
-//            .map(attraction -> {
-//
-//                Map<String, Object> info = new HashMap<>();
-//                info.put("attractionName", attraction.attractionName);
-//                info.put("attractionLatitude", attraction.latitude);
-//                info.put("attractionLongitude", attraction.longitude);
-//                info.put("userLatitude", userLocation.latitude);
-//                info.put("userLongitude", userLocation.longitude);
-//                double distance = rewardsService.getDistance(userLocation, new Location(attraction.latitude, attraction.longitude));
-//                info.put("distance", distance);
-//                int rewardPoints = rewardsService.getRewardPoints(attraction, user);
-//                info.put("rewardPoints", rewardPoints);
-//                return info;
-//            })
-//            .collect(Collectors.toList());
-//}
+    //  TODO: Change this method to no longer return a List of Attractions.
+    //  Instead: Get the closest five tourist attractions to the user - no matter how far away they are.
+    //  Return a new JSON object that contains:
+    // Name of Tourist attraction,
+    // Tourist attractions lat/long,
+    // The user's location lat/long,
+    // The distance in miles between the user's location and each of the attractions.
+    // The reward points for visiting each Attraction.
+    //    Note: Attraction reward points can be gathered from RewardsCentral
 
 @RequestMapping("/getNearbyAttractions")
 public List<NearbyAttractionDto> getNearbyAttractions(@RequestParam String userName) {
@@ -110,11 +91,7 @@ public List<NearbyAttractionDto> getNearbyAttractions(@RequestParam String userN
     public List<Provider> getTripDeals(@RequestParam String userName) {
     	return tourGuideService.getTripDeals(getUser(userName));
     }
-    
-//    private User getUser(String userName) {
-//
-//        return tourGuideService.getUser(userName);
-//    }
+
 private User getUser(String userName) {
     User user = tourGuideService.getUser(userName);
     if (user == null) {
@@ -122,5 +99,9 @@ private User getUser(String userName) {
     }
     return user;
 }
+
+//    private User getUser(String userName) {
+//        return tourGuideService.getUser(userName);
+//    }
 
 }

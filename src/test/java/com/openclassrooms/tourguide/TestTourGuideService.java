@@ -92,11 +92,9 @@ public class TestTourGuideService {
 		assertEquals(user.getUserId(), visitedLocation.userId);
 	}
 
-//	@Disabled // Not yet implemented
+	//	@Disabled
 	@Test
-	//un utilisateur est considéré “proche” de toutes les attractions, alors il reçoit une récompense pour chacune
 	public void getNearbyAttractions() {
-
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		InternalTestHelper.setInternalUserNumber(0);
@@ -104,6 +102,8 @@ public class TestTourGuideService {
 
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
 		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
+		System.out.println("User location: lat = " + visitedLocation.location.latitude + ", lon = " + visitedLocation.location.longitude);
+
 
 		List<Attraction> attractions = tourGuideService.getNearByAttractions(visitedLocation);
 
@@ -111,7 +111,7 @@ public class TestTourGuideService {
 
 		assertEquals(5, attractions.size());
 	}
-
+	@Test
 	public void getTripDeals() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());

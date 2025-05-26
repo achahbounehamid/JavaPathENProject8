@@ -2,11 +2,14 @@ package com.openclassrooms.tourguide;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.VisitedLocation;
@@ -16,12 +19,7 @@ import com.openclassrooms.tourguide.service.RewardsService;
 import com.openclassrooms.tourguide.service.TourGuideService;
 import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
-import gpsUtil.location.Location;
-import gpsUtil.location.VisitedLocation;
-import gpsUtil.location.Attraction;
 
-
-//@Disabled("À corriger après avoir terminé l’étape 3 - le test échoue actuellement")
 public class TestRewardsService {
 
 	@Test
@@ -31,22 +29,14 @@ public class TestRewardsService {
 
 		InternalTestHelper.setInternalUserNumber(0);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
-        // Crée un utilisateur
+
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		// Simule une visite à l'emplacement d'une attraction
 		Attraction attraction = gpsUtil.getAttractions().get(0);
-//		user.addToVisitedLocations(new VisitedLocation(user.getUserId(), attraction, new Date()));corriger
-		Location location = new Location(attraction.latitude, attraction.longitude);
-		VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), location, new Date());
-		user.addToVisitedLocations(visitedLocation);
-
-		// Calcul des récompenses
+		user.addToVisitedLocations(new VisitedLocation(user.getUserId(), attraction, new Date()));
 		tourGuideService.trackUserLocation(user);
-
 		List<UserReward> userRewards = user.getUserRewards();
 		tourGuideService.tracker.stopTracking();
-		// vérifie qu'au moins une récompense a été ajoutée
-		assertTrue(userRewards.size() > 1);
+		assertTrue(userRewards.size() == 1);
 	}
 
 	@Test
@@ -56,8 +46,24 @@ public class TestRewardsService {
 		Attraction attraction = gpsUtil.getAttractions().get(0);
 		assertTrue(rewardsService.isWithinAttractionProximity(attraction, attraction));
 	}
-
-//	@Disabled Needs fixed - can throw ConcurrentModificationException
+	/**
+	 * Vérifie que l'utilisateur reçoit une récompense pour chaque attraction
+	 * lorsque la zone de proximité est étendue à son maximum.
+	 *
+	 * Contexte :
+	 * - Le test définit proximityBuffer à Integer.MAX_VALUE, ce qui rend toutes les attractions "proches".
+	 * - Un utilisateur est généré avec InternalTestHelper.
+	 * - La méthode calculateRewards() est appelée pour cet utilisateur.
+	 *
+	 * Attendu :
+	 * - L'utilisateur doit recevoir autant de récompenses que d'attractions disponibles.
+	 *
+	 * Corrections apportées dans le code :
+	 * - Ajout de localisations fictives si aucune n'est enregistrée.
+	 * - Suppression du filtrage bloquant dans addUserReward().
+	 * - Utilisation de copies locales pour éviter les erreurs de modification concurrente.
+	 */
+	//@Disabled
 	@Test
 	public void nearAllAttractions() {
 		GpsUtil gpsUtil = new GpsUtil();
