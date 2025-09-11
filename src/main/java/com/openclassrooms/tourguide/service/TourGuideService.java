@@ -200,7 +200,9 @@ public class TourGuideService {
 	private static final String tripPricerApiKey = "test-server-api-key";
 	// Database connection will be used for external users, but for testing purposes
 	// internal users are provided and stored in memory
-	private final Map<String, User> internalUserMap = new HashMap<>();
+//	private final Map<String, User> internalUserMap = new HashMap<>();
+	private final Map<String, User> internalUserMap = new java.util.concurrent.ConcurrentHashMap<>();
+
 
 	private void initializeInternalUsers() {
 		IntStream.range(0, InternalTestHelper.getInternalUserNumber()).forEach(i -> {

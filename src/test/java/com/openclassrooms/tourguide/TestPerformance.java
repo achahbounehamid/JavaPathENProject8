@@ -51,31 +51,37 @@ public class TestPerformance {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
-		InternalTestHelper.setInternalUserNumber(1000); // Ajuste selon ton besoin
-		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
+		// ← lit -DuserCount, défaut 1000 si absent
+		int n = Integer.getInteger("userCount", 1000);
+		InternalTestHelper.setInternalUserNumber(n);
 
-		List<User> allUsers = tourGuideService.getAllUsers();
+		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		//  Appel logique métier optimisée
-		tourGuideService.trackAllUsersLocationAsync();
+		tourGuideService.trackAllUsersLocationAsync(); // ta méthode asynchrone
 
 		stopWatch.stop();
 		tourGuideService.tracker.stopTracking();
 
-		System.out.println("highVolumeTrackLocation: Time Elapsed: " +
-				TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
+		System.out.println("highVolumeTrackLocation ("+n+"): "
+				+ TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " s");
+
 		assertTrue(TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	}
+
 
 	@Test
 	public void highVolumeGetRewards() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
-		InternalTestHelper.setInternalUserNumber(100);
+		// ← préfère -DrewardsUserCount si fourni, sinon -DuserCount, sinon 100
+		int n = Integer.getInteger("rewardsUserCount",
+				Integer.getInteger("userCount", 100));
+		InternalTestHelper.setInternalUserNumber(n);
+
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
 		Attraction attraction = gpsUtil.getAttractions().get(0);
@@ -85,19 +91,18 @@ public class TestPerformance {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		// Appel logique métier optimisée
-		tourGuideService.calculateAllRewardsAsync();
+		tourGuideService.calculateAllRewardsAsync(); // ta méthode asynchrone
 
 		stopWatch.stop();
 		tourGuideService.tracker.stopTracking();
 
-		System.out.println("highVolumeGetRewards: Time Elapsed: " +
-				TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
+		System.out.println("highVolumeGetRewards ("+n+"): "
+				+ TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " s");
 
 		for (User user : allUsers) {
 			assertTrue(user.getUserRewards().size() > 0);
 		}
-
 		assertTrue(TimeUnit.MINUTES.toSeconds(20) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	}
+
 }

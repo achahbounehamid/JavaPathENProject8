@@ -39,36 +39,58 @@ public class RewardsService {
 		proximityBuffer = defaultProximityBuffer;
 	}
 
-	public void calculateRewards(User user) {
+//---modification parce que tu crées des visites pour toutes les attractions quand la liste est vide. Ça fausse les récompenses et peut alourdir inutilement.
+//	public void calculateRewards(User user) {
+//		List<VisitedLocation> userLocations = new ArrayList<>(user.getVisitedLocations());
+//		List<Attraction> attractions = new ArrayList<>(gpsUtil.getAttractions());
+//		if(userLocations.isEmpty()){
+//			for(Attraction attraction : attractions){
+//				userLocations.add(new VisitedLocation(
+//						user.getUserId(),
+//						new Location(attraction.latitude, attraction.longitude),
+//						new Date()
+//				));
+//			}
+//		}
+//		for (VisitedLocation visitedLocation : userLocations) {
+//			for (Attraction attraction : attractions) {
+//				if (nearAttraction(visitedLocation, attraction)) {
+//					user.addUserReward(new UserReward(
+//							visitedLocation,
+//							attraction,
+//							getRewardPoints(attraction, user)
+//					));
+//				}
+//			}
+//		}
+//	}
+//
+//
+//	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
+//		return getDistance(attraction, location) > attractionProximityRange ? false : true;
+//	}
+
+	public void calculateRewards(User user){
+		// Copie défensive pour éviter ConcurrentModification si une autre thread ajoute une visite
 		List<VisitedLocation> userLocations = new ArrayList<>(user.getVisitedLocations());
 		List<Attraction> attractions = new ArrayList<>(gpsUtil.getAttractions());
-		if(userLocations.isEmpty()){
-			for(Attraction attraction : attractions){
-				userLocations.add(new VisitedLocation(
-						user.getUserId(),
-						new Location(attraction.latitude, attraction.longitude),
-						new Date()
-				));
-			}
-		}
+
 		for (VisitedLocation visitedLocation : userLocations) {
 			for (Attraction attraction : attractions) {
-				if (nearAttraction(visitedLocation, attraction)) {
+				boolean notAlreadyRewarded = user.getUserRewards().stream()
+						.noneMatch(r -> r.attraction.attractionId.equals(attraction.attractionId));
+				if (notAlreadyRewarded && nearAttraction(visitedLocation, attraction)) {
 					user.addUserReward(new UserReward(
-							visitedLocation,
-							attraction,
-							getRewardPoints(attraction, user)
+							visitedLocation, attraction, getRewardPoints(attraction, user)
 					));
 				}
 			}
 		}
 	}
 
-
-	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
-		return getDistance(attraction, location) > attractionProximityRange ? false : true;
-	}
-
+public boolean isWithinAttractionProximity(Attraction attraction, Location location){
+	return getDistance(attraction, location) <= attractionProximityRange;
+}
 	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
 		return getDistance(attraction, visitedLocation.location) <=proximityBuffer;
 	}
