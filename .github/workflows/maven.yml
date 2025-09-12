@@ -32,7 +32,7 @@ jobs:
       - name: Build & Test (timed)
         run: |
           start=$(date +%s)
-          mvn -B -ntp '-Dtest=!TestPerformance' clean verify
+          mvn -B -ntp -Pci-fast clean verify
           end=$(date +%s)
           echo " Build & Test : $((end-start))s" >> $GITHUB_STEP_SUMMARY 
 
