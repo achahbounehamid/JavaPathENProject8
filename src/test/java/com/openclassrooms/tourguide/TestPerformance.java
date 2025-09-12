@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-//@Disabled
+
 public class TestPerformance {
 /*
 	 * A note on performance improvements:
@@ -77,7 +77,7 @@ public class TestPerformance {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
-		// ← préfère -DrewardsUserCount si fourni, sinon -DuserCount, sinon 100
+		// DrewardsUserCount si fourni, sinon -DuserCount, sinon 100
 		int n = Integer.getInteger("rewardsUserCount",
 				Integer.getInteger("userCount", 100));
 		InternalTestHelper.setInternalUserNumber(n);
