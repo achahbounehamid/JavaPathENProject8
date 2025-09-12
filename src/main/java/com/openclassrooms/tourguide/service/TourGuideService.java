@@ -40,7 +40,11 @@ public class TourGuideService {
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
 	boolean testMode = true;
-	private final ExecutorService executorService = Executors.newFixedThreadPool(100);
+//	private final ExecutorService executorService = Executors.newFixedThreadPool(100);
+	private final ExecutorService executorService =
+			java.util.concurrent.Executors.newFixedThreadPool(
+					Math.max(4, Runtime.getRuntime().availableProcessors() * 2)
+			);
 	public List<Attraction> getAllAttractions(){
 		return gpsUtil.getAttractions();
 	}

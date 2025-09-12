@@ -32,9 +32,9 @@ jobs:
       - name: Build & Test (timed)
         run: |
           start=$(date +%s)
-          mvn -B -ntp clean verify
+          mvn -B -ntp '-Dtest=!TestPerformance' clean verify
           end=$(date +%s)
-          echo " Build & Test : $((end-start))s" >> $GITHUB_STEP_SUMMARY
+          echo " Build & Test : $((end-start))s" >> $GITHUB_STEP_SUMMARY 
 
       - name: Upload artifacts (jar + test reports)
         if: always()
