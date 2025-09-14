@@ -29,12 +29,13 @@ jobs:
           mvn -q install:install-file -Dfile=libs/RewardCentral.jar -DgroupId=rewardCentral -DartifactId=rewardCentral -Dversion=1.0.0 -Dpackaging=jar
           mvn -q install:install-file -Dfile=libs/TripPricer.jar    -DgroupId=tripPricer    -DartifactId=tripPricer    -Dversion=1.0.0 -Dpackaging=jar
 
+      # Utilise le profil 'ci-fast' de ton POM pour exclure TestPerformance
       - name: Build & Test (timed)
         run: |
           start=$(date +%s)
           mvn -B -ntp -Pci-fast clean verify
           end=$(date +%s)
-          echo " Build & Test : $((end-start))s" >> $GITHUB_STEP_SUMMARY 
+          echo "Build & Unit Tests : $((end-start))s" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload artifacts (jar + test reports)
         if: always()
@@ -47,11 +48,28 @@ jobs:
 
   perf:
     name: Performance Tests
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[perf]')
+    # Lance ce job si:
+    # 1) tu cliques sur "Run workflow", OU
+    # 2) c'est un push et le message du commit contient [perf],
+    # 3) c'est une PR et le titre ou la description contient [perf].
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'push' &&
+         (contains(github.event.head_commit.message, '[perf]') ||
+          contains(join(github.event.commits.*.message, ' '), '[perf]'))
+        ) ||
+        (github.event_name == 'pull_request' &&
+         (contains(github.event.pull_request.title, '[perf]') ||
+          contains(github.event.pull_request.body, '[perf]'))
+        )
+      }}
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 180
     strategy:
+      # Évite d'exécuter 100 / 1000 / 10000 / 100000 en parallèle sur un runner 2 vCPU
+      max-parallel: 1
       matrix:
         userCount: [100, 1000, 10000, 100000]
     steps:
@@ -73,4 +91,8 @@ jobs:
           mvn -q install:install-file -Dfile=libs/TripPricer.jar    -DgroupId=tripPricer    -DartifactId=tripPricer    -Dversion=1.0.0 -Dpackaging=jar
 
       - name: Run TestPerformance (userCount=${{ matrix.userCount }})
-        run: mvn -B -ntp -Dtest=TestPerformance -DuserCount=${{ matrix.userCount }} test
+        run: |
+          start=$(date +%s)
+          mvn -B -ntp -Dtest=TestPerformance -DuserCount=${{ matrix.userCount }} test
+          end=$(date +%s)
+          echo "Performance Test (userCount=${{ matrix.userCount }}) : $((end-start))s" >> $GITHUB_STEP_SUMMARY
