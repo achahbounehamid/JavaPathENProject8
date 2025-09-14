@@ -53,7 +53,7 @@ jobs:
     timeout-minutes: 90
     strategy:
       matrix:
-        userCount: [100, 1000, 10000]
+        userCount: [100, 1000, 10000, 100000]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
