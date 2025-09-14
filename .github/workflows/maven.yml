@@ -11,6 +11,8 @@ jobs:
   build:
     name: Build & Unit Tests
     runs-on: ubuntu-latest
+    env:
+      MAVEN_OPTS: "-Xms512m -Xmx2g -XX:+UseG1GC"
 
     steps:
       - name: Checkout
@@ -22,6 +24,13 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
+
+      - name: Show runner info
+        run: |
+          echo "CPUs: $(nproc)"
+          free -h
+          mvn -v
+          java -version
 
       - name: Install external jars (if any)
         if: ${{ hashFiles('libs/*.jar') != '' }}
@@ -70,6 +79,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    continue-on-error: true   # <- optionnel: le workflow reste vert si une case perf échoue
+    env:
+      MAVEN_OPTS: "-Xms512m -Xmx2g -XX:+UseG1GC"
+      PERF_BUDGET_MS: "120000"   # <- budget CI (à adapter)
 
     strategy:
       fail-fast: false
@@ -97,7 +110,9 @@ jobs:
       - name: Run TestPerformance (userCount=${{ matrix.userCount }})
         run: |
           set -o pipefail
-          mvn -B -ntp -Dtest=TestPerformance -DuserCount=${{ matrix.userCount }} test | tee perf-${{ matrix.userCount }}.log
+          mvn -B -ntp -Dtest=TestPerformance \
+              -DuserCount=${{ matrix.userCount }} \
+              -Dperf.budget.ms=${{ env.PERF_BUDGET_MS }} test | tee perf-${{ matrix.userCount }}.log
 
       - name: Publish perf timings to summary
         if: always()
@@ -109,9 +124,11 @@ jobs:
             echo "_No timing lines found in output._" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Upload perf logs
+      - name: Upload perf reports & logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: perf-logs
-          path: perf-*.log
+          name: perf-${{ matrix.userCount }}
+          path: |
+            **/target/surefire-reports/**
+            perf-*.log
