@@ -1,5 +1,19 @@
 package com.openclassrooms.tourguide.user;
 
+/**
+ * Préférences de voyage d'un utilisateur.
+ *
+ * <p><b>Rôle :</b> regrouper les paramètres utilisés par les services de tarification
+ * et de recommandation (durée du voyage, quantité de tickets, composition du groupe, etc.).</p>
+ *
+ * <p><b>Valeurs par défaut :</b>
+ * <ul>
+ *   <li>{@code attractionProximity} = {@link Integer#MAX_VALUE} (proximité maximale : désactive le filtrage strict)</li>
+ *   <li>{@code tripDuration} = 1 (jour)</li>
+ *   <li>{@code ticketQuantity} = 1</li>
+ *   <li>{@code numberOfAdults} = 1</li>
+ *   <li>{@code numberOfChildren} = 0</li>
+ */
 public class UserPreferences {
 	
 	private int attractionProximity = Integer.MAX_VALUE;

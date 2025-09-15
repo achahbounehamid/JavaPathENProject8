@@ -8,6 +8,17 @@ import java.util.UUID;
 import gpsUtil.location.VisitedLocation;
 import tripPricer.Provider;
 
+/**
+ * Modèle de domaine représentant un utilisateur de l'application TourGuide.
+ *
+ * <p><b>Rôles principaux :</b>
+ * <ul>
+ *   <li>Conserver l'identité de l'utilisateur (id, nom, contacts).</li>
+ *   <li>Maintenir l'historique de ses localisations visitées.</li>
+ *   <li>Stocker ses récompenses ({@link UserReward}) et préférences de voyage ({@link UserPreferences}).</li>
+ *   <li>Mémoriser les offres de voyage proposées ({@link Provider}).</li>
+
+ */
 public class User {
 	private final UUID userId;
 	private final String userName;

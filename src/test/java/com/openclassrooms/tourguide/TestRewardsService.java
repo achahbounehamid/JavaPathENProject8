@@ -20,8 +20,41 @@ import com.openclassrooms.tourguide.service.TourGuideService;
 import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
 
+//**
+ * Tests unitaires du service de récompenses (RewardsService).
+		*
+		* <p><b>Objectifs pédagogiques :</b>
+		* <ul>
+ *   <li>Valider l’attribution d’une récompense lorsqu’un utilisateur visite une attraction.</li>
+		*   <li>Vérifier la logique de proximité “large” d’une attraction (distance ≤ 200 miles).</li>
+		*   <li>Vérifier qu’avec un buffer maximal, l’utilisateur est récompensé pour <i>toutes</i> les attractions.</li>
+		* </ul>
+		*
+		* <p><b>Contexte technique :</b>
+		* <ul>
+ *   <li>Les tests utilisent des utilisateurs internes (via {@code InternalTestHelper}).</li>
+		*   <li>Le {@code Tracker} lancé par {@code TourGuideService} est arrêté en fin de test
+ *       pour éviter de garder un thread vivant en arrière-plan.</li>
+		* </ul>
+		*
+		* <p><b>Bonnes pratiques :</b> si un test échoue, penser à arrêter le tracker dans un bloc {@code finally}
+ * pour garantir un arrêt propre des threads.</p>
+		*/
 public class TestRewardsService {
 
+	/**
+	 * Cas nominal : lorsqu'une visite est enregistrée <b>exactement</b> sur l'une des attractions,
+	 * une et une seule récompense doit être attribuée à l’utilisateur.
+	 *
+	 * <p><b>Étapes :</b>
+	 * <ol>
+	 *   <li>Créer un utilisateur sans historiques internes.</li>
+	 *   <li>Ajouter une visite positionnée sur la première attraction retournée par {@code GpsUtil}.</li>
+	 *   <li>Appeler {@code trackUserLocation(user)} qui déclenche le calcul des récompenses.</li>
+	 * </ol>
+	 *
+	 * <p><b>Attendu :</b> la liste des récompenses de l’utilisateur contient exactement 1 élément.</p>
+	 */
 	@Test
 	public void userGetRewards() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -39,6 +72,12 @@ public class TestRewardsService {
 		assertTrue(userRewards.size() == 1);
 	}
 
+	/**
+	 * Vérifie que la méthode {@code isWithinAttractionProximity} considère une attraction
+	 * comme “proche” d’elle-même (distance nulle).
+	 *
+	 * <p><b>Attendu :</b> distance = 0 mile ≤ 200 miles ⇒ renvoie {@code true}.</p>
+	 */
 	@Test
 	public void isWithinAttractionProximity() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -46,22 +85,21 @@ public class TestRewardsService {
 		Attraction attraction = gpsUtil.getAttractions().get(0);
 		assertTrue(rewardsService.isWithinAttractionProximity(attraction, attraction));
 	}
+
 	/**
-	 * Vérifie que l'utilisateur reçoit une récompense pour chaque attraction
-	 * lorsque la zone de proximité est étendue à son maximum.
+	 * Vérifie que l’utilisateur reçoit une récompense pour <b>chaque attraction</b>
+	 * lorsque la zone de proximité (proximity buffer) est étendue à son maximum.
 	 *
-	 * Contexte :
-	 * - Le test définit proximityBuffer à Integer.MAX_VALUE, ce qui rend toutes les attractions "proches".
-	 * - Un utilisateur est généré avec InternalTestHelper.
-	 * - La méthode calculateRewards() est appelée pour cet utilisateur.
+	 * <p><b>Contexte :</b>
+	 * <ul>
+	 *   <li>{@code setProximityBuffer(Integer.MAX_VALUE)} rend toutes les attractions “proches”.</li>
+	 *   <li>Un utilisateur interne est généré ; on calcule ses récompenses.</li>
+	 * </ul>
 	 *
-	 * Attendu :
-	 * - L'utilisateur doit recevoir autant de récompenses que d'attractions disponibles.
+	 * <p><b>Attendu :</b> le nombre de récompenses de l’utilisateur est égal au nombre total d’attractions.</p>
 	 *
-	 * Corrections apportées dans le code :
-	 * - Ajout de localisations fictives si aucune n'est enregistrée.
-	 * - Suppression du filtrage bloquant dans addUserReward().
-	 * - Utilisation de copies locales pour éviter les erreurs de modification concurrente.
+	 * <p><b>Robustesse :</b> le calcul dans {@code RewardsService} utilise des copies défensives des listes pour
+	 * éviter toute {@code ConcurrentModificationException} si le tracker modifie les visites en parallèle.</p>
 	 */
 	//@Disabled
 	@Test
@@ -79,5 +117,5 @@ public class TestRewardsService {
 
 		assertEquals(gpsUtil.getAttractions().size(), userRewards.size());
 	}
-
 }
+

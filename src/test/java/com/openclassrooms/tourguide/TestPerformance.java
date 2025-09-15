@@ -21,31 +21,31 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-
+/**
+ * Tests de performance haute volumétrie pour TourGuide.
+ *
+ * <p><b>Objectifs (exigences) :</b>
+ * <ul>
+ *   <li><b>track location</b> : 100 000 utilisateurs en ≤ 15 minutes.</li>
+ *   <li><b>get rewards</b>   : 100 000 utilisateurs en ≤ 20 minutes.</li>
+ * </ul>
+ *
+ * <p><b>Paramétrage via System properties</b> (ex. avec Maven : -DuserCount=100000 -DbatchSize=2000 -DgpsThreads=256 -DrewardsThreads=512)</p>
+ * <ul>
+ *   <li><code>userCount</code>, <code>rewardsUserCount</code> : nombre d’utilisateurs internes.</li>
+ *   <li><code>batchSize</code> : taille des lots pour le batching (défaut 2000).</li>
+ *   <li><code>gpsThreads</code> / <code>rewardsThreads</code> : taille des pools d’exécution.</li>
+ * </ul>
+ *
+ * <p><b>Notes :</b>
+ * Les tests utilisent les méthodes asynchrones de {@link TourGuideService} (parallélisées + batching) et
+ * arrêtent proprement le tracker à la fin.</p>
+ */
 public class TestPerformance {
-/*
-	 * A note on performance improvements:
-	 *
-	 * The number of users generated for the high volume tests can be easily
-	 * adjusted via this method:
-	 *
-	 * InternalTestHelper.setInternalUserNumber(100000);
-	 *
-	 *
-	 * These tests can be modified to suit new solutions, just as long as the
-	 * performance metrics at the end of the tests remains consistent.
-	 *
-	 * These are performance metrics that we are trying to hit:
-	 *
-	 * highVolumeTrackLocation: 100,000 users within 15 minutes:
-	 * assertTrue(TimeUnit.MINUTES.toSeconds(15) >=
-	 * TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
-	 *
-	 * highVolumeGetRewards: 100,000 users within 20 minutes:
-	 * assertTrue(TimeUnit.MINUTES.toSeconds(20) >=
-	 * TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));*/
-
-
+	/**
+	 * Perf GPS ONLY (pas de calcul de récompenses).
+	 * <p>Vérifie que le tracking de N utilisateurs s’exécute dans le budget temps.</p>
+	 */
 	@Test
 	public void highVolumeTrackLocation() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -71,7 +71,10 @@ public class TestPerformance {
 		assertTrue(TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	}
 
-
+	/**
+	 * Perf Rewards (calcul parallèle des points pour N utilisateurs).
+	 * <p>Chaque utilisateur reçoit au moins une visite sur une attraction pour garantir l’éligibilité.</p>
+	 */
 	@Test
 	public void highVolumeGetRewards() {
 		GpsUtil gpsUtil = new GpsUtil();
