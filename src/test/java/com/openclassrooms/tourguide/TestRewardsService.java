@@ -20,7 +20,7 @@ import com.openclassrooms.tourguide.service.TourGuideService;
 import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
 
-//**
+/**
  * Tests unitaires du service de récompenses (RewardsService).
 		*
 		* <p><b>Objectifs pédagogiques :</b>
@@ -33,7 +33,7 @@ import com.openclassrooms.tourguide.user.UserReward;
 		* <p><b>Contexte technique :</b>
 		* <ul>
  *   <li>Les tests utilisent des utilisateurs internes (via {@code InternalTestHelper}).</li>
-		*   <li>Le {@code Tracker} lancé par {@code TourGuideService} est arrêté en fin de test
+		*   <li>Le {@code Tracker} lance par {@code TourGuideService} est arrêté en fin de test
  *       pour éviter de garder un thread vivant en arrière-plan.</li>
 		* </ul>
 		*
