@@ -29,17 +29,6 @@ import org.junit.jupiter.api.Test;
  *   <li><b>track location</b> : 100 000 utilisateurs en ≤ 15 minutes.</li>
  *   <li><b>get rewards</b>   : 100 000 utilisateurs en ≤ 20 minutes.</li>
  * </ul>
- *
- * <p><b>Paramétrage via System properties</b> (ex. avec Maven : -DuserCount=100000 -DbatchSize=2000 -DgpsThreads=256 -DrewardsThreads=512)</p>
- * <ul>
- *   <li><code>userCount</code>, <code>rewardsUserCount</code> : nombre d’utilisateurs internes.</li>
- *   <li><code>batchSize</code> : taille des lots pour le batching (défaut 2000).</li>
- *   <li><code>gpsThreads</code> / <code>rewardsThreads</code> : taille des pools d’exécution.</li>
- * </ul>
- *
- * <p><b>Notes :</b>
- * Les tests utilisent les méthodes asynchrones de {@link TourGuideService} (parallélisées + batching) et
- * arrêtent proprement le tracker à la fin.</p>
  */
 public class TestPerformance {
 	/**
@@ -51,7 +40,7 @@ public class TestPerformance {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
-		// ← lit -DuserCount, défaut 1000 si absent
+		// lit -DuserCount, défaut 1000 si absent
 		int n = Integer.getInteger("userCount", 100);
 		InternalTestHelper.setInternalUserNumber(n);
 
@@ -60,7 +49,7 @@ public class TestPerformance {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		tourGuideService.trackAllUsersLocationAsync(); // ta méthode asynchrone
+		tourGuideService.trackAllUsersLocationAsync(); // la méthode asynchrone
 
 		stopWatch.stop();
 		tourGuideService.tracker.stopTracking();
