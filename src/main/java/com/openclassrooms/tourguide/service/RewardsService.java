@@ -74,6 +74,7 @@ public class RewardsService {
 	 *
 	 * @param user utilisateur ciblé
 	 */
+	// éviter doublons de récompenses
 	public void calculateRewards(User user){
 		// Copie défensive pour éviter ConcurrentModification si une autre thread ajoute une visite
 		List<VisitedLocation> userLocations = new ArrayList<>(user.getVisitedLocations());
